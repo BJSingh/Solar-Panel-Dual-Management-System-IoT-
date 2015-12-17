@@ -53,17 +53,17 @@ float ratio = 0;
 float concentration = 0;
 
 //function to send data of sensors on webserver 
-void deviceLocation_data(int alert){                           //alert 0 means uploading current,voltage, dust sensor and battery value; alert 1 means uploading GPS location and battery value  
-   String value = String(LBattery.level());                   //calculating the level of battery 
-   String payload;                                           //Variable to collect all sensor data for data upload on Webserver
-   String le;                                               //length of the payload in characters
-  if(alert==1){                                            //enters when there is theft 
-      LGPS.getData(&info);                                // Get a GPS fix
-      if (ParseLocation((const char*)info.GPGGA)) {      // This is where we break out needed location information
+void deviceLocation_data(int alert){     //alert 0 means uploading current,voltage, dust sensor and battery value; alert 1 means uploading GPS location and battery value  
+   String value = String(LBattery.level());           //calculating the level of battery 
+   String payload;                                    //Variable to collect all sensor data for data upload on Webserver
+   String le;                                         //length of the payload in characters
+  if(alert==1){                                       //enters when there is theft 
+      LGPS.getData(&info);                            // Get a GPS fix
+      if (ParseLocation((const char*)info.GPGGA)) {   // This is where we break out needed location information
         Serial.print("Location is: ");
-        Serial.println(Location);                      // This is the format needed by Ubidots
+        Serial.println(Location);                     // This is the format needed by Ubidots
       }
-      if (Location.length()==0) {                    //enters when no GPS location available otherwise execute else case
+      if (Location.length()==0) {                     //enters when no GPS location available otherwise execute else case
         payload = "[{\"variable\":\"" alertID "\",\"value\":" + String(alert) + "},{\"variable\":\"" batID "\",\"value\":"+ value + "}]";  //Build the JSON packet without GPS info// with GPS info
       }
       else {
@@ -93,7 +93,7 @@ void deviceLocation_data(int alert){                           //alert 0 means u
     globalClient.println(); 
     globalClient.println(payload); 
     globalClient.println();
-    globalClient.println((char)26);                                         //This terminates the JSON SEND with a carriage return 
+    globalClient.println((char)26);                   //This terminates the JSON SEND with a carriage return 
   }
   else{
     // if you didn't get a connection to the server:
@@ -118,7 +118,7 @@ void deviceLocation_data(int alert){                           //alert 0 means u
 }
 
 boolean ParseLocation(const char* GPGGAstr){
- // Refer to http://www.gpsinformation.org/dale/nmea.htm#GGA
+// Refer to http://www.gpsinformation.org/dale/nmea.htm#GGA
 // Sample data: $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47
 
   char latarray[6];
@@ -128,7 +128,7 @@ boolean ParseLocation(const char* GPGGAstr){
   Serial.print("Fix Quality: ");
   Serial.println(GPGGAstr[43]);
   
-  if (GPGGAstr[43]=='0') {            //  This is the place in the sentence that shows Fix Quality 0 means no fix
+  if (GPGGAstr[43]=='0') {         //  This is the place in the sentence that shows Fix Quality 0 means no fix
     Serial.println("No GPS Fix");
     Location = "";                 // No fix then no Location string
     return 0;
@@ -136,24 +136,24 @@ boolean ParseLocation(const char* GPGGAstr){
   
   String GPSstring = String(GPGGAstr);
   for (int i=20; i<=26; i++) {           // We have to jump through some hoops here
-    latarray[index] = GPGGAstr[i];      // we need to pick out the minutes from the char array
+    latarray[index] = GPGGAstr[i];       // we need to pick out the minutes from the char array
     index++;
   }
   
-  float latdms = atof(latarray);                             // and convert them to a float
-  float lattitude = latdms/60;                              // and convert that to decimal degrees
-  String lattstring = String(lattitude);                   // Then put back into a string
+  float latdms = atof(latarray);         // and convert them to a float
+  float lattitude = latdms/60;           // and convert that to decimal degrees
+  String lattstring = String(lattitude); // Then put back into a string
   Location = "{\"lat\":";
   if(GPGGAstr[28] == 'S') Location = Location + "-";
   Location += GPSstring.substring(18,20) + "." + lattstring.substring(2,4);
   index = 0;
   
   for (int i=33; i<=38; i++) {           // And do the same thing for longitude
-    longarray[index] = GPGGAstr[i];     // the good news is that the GPS data is fixed column
+    longarray[index] = GPGGAstr[i];      // the good news is that the GPS data is fixed column
     index++;
   }
-  float longdms = atof(longarray);         // and convert them to a float
-  float longitude = longdms/60;           // and convert that to decimal degrees
+  float longdms = atof(longarray);       // and convert them to a float
+  float longitude = longdms/60;          // and convert that to decimal degrees
   String longstring = String(longitude); // Then put back into a string
   Location += " ,\"lng\":";
   
@@ -242,18 +242,18 @@ void powerCal(){
       Serial.print(avgVolt,1);
       Serial.print("V");
       Serial.print("\tPower =");
-      Serial.print((avgCurrent/1000.0)*avgVolt);                                    //Computing power
+      Serial.print((avgCurrent/1000.0)*avgVolt);        //Computing power
       Serial.println("W");    
   }
 
 //Function for calculating the dust concentration level 
 void dustCal(){
-    duration = pulseIn(pin, LOW);                                             //reads the duration or total of low pulse on pin
+    duration = pulseIn(pin, LOW);                       //reads the duration or total of low pulse on pin
     lowpulseoccupancy = lowpulseoccupancy+duration;
   
     if ((millis()-starttime) > sampletime_ms)
     {
-      ratio = lowpulseoccupancy/(sampletime_ms*10.0);                    // Integer percentage 0=>100
+      ratio = lowpulseoccupancy/(sampletime_ms*10.0);   // Integer percentage 0=>100
       concentration = 1.1*pow(ratio,3)-3.8*pow(ratio,2)+520*ratio+0.62; // using spec sheet curve
       Serial.print("  lowpulseoccupancy: ");
       Serial.print(lowpulseoccupancy);
@@ -271,41 +271,41 @@ void dustCal(){
 
 //runs only once when power on or reset
 void setup(){
-  Serial.begin(9600);                                                       // setup Serial port
+  Serial.begin(9600);          // setup Serial port
   
-  LGPS.powerOn();                                                         // Start the GPS first as it takes time to get a fix
+  LGPS.powerOn();              // Start the GPS first as it takes time to get a fix
   Serial.println("GPS Powered on, and waiting ...");
-  Serial.println("Attach to GPRS network");                             // Attach to GPRS network - need to add timeout
-  while (!LGPRS.attachGPRS("","","")) {                                //attachGPRS(const char *apn, const char *username, const char *password);example (!LGPRS.attachGPRS("aircelgprs.pr","",""))
+  Serial.println("Attach to GPRS network");  // Attach to GPRS network - need to add timeout
+  while (!LGPRS.attachGPRS("","","")) {      //attachGPRS(const char *apn, const char *username, const char *password);example (!LGPRS.attachGPRS("aircelgprs.pr","",""))
     delay(500);
   }
-  LGPRSClient client;                                               //Client has to be initiated after GPRS is established with the correct APN settings - see above link
-  globalClient = client;                                           // Again this is a temporary solution described in support forums
+  LGPRSClient client;         //Client has to be initiated after GPRS is established with the correct APN settings
+  globalClient = client;      // Again this is a temporary solution described in support forums
   delay(1000);
-  deviceLocation(0);                                             //Sending device location first time during installation and passing 0 means no theft 
+  deviceLocation(0);          //Sending device location first time during installation and passing 0 means no theft 
   
-  delay(3000);                                                 //setup time so when power on no error in storing initial axis value of panel 
-  adxl.powerOn();                                             //making adxl acceleromter on
-  axisInitialization();                                      //calling function to store the intial installed axis of system 
+  delay(3000);                //setup time so when power on no error in storing initial axis value of panel 
+  adxl.powerOn();             //making adxl acceleromter on
+  axisInitialization();       //calling function to store the intial installed axis of system 
   
-  pinMode(2,INPUT);                                        //Initializing digital pin 2 as input for reading dust sensor value
-  starttime = millis();                                   //Returns the number of milliseconds since the LinIt ONE board began running the current program  
+  pinMode(2,INPUT);           //Initializing digital pin 2 as input for reading dust sensor value
+  starttime = millis();       //Returns the number of milliseconds since the LinIt ONE board began running the current program  
 }
 
 //forever loop code 
 void loop(){
   int unauth_activity=0;
-  unauth_activity= compareResult();                             //Function to check or compare the axis value of panel for any change 
+  unauth_activity= compareResult();     //Function to check or compare the axis value of panel for any change 
   
   if(unauth_activity==1){
       Serial.println("There is unauthorised activity...");
-      deviceLocation_data(1);                                //Function for sending device location with battery level for tracing and passing 1, which is alert indication of theft
+      deviceLocation_data(1);           //Function for sending device location with battery level for tracing and passing 1, which is alert indication of theft
       delay(100);  
     }
    else {
-      powerCal();                                        //calling function for calculating voltage, current and power provided by solar panel
-      dustCal();                                        //calling function for calculating deposition of dust concentration on panel
-      deviceLocation_data(0);                          //Function for sending sensor data for Maintenance Indication or monitoring of Solar panel for Efficiency check and passing 0 means normal acitvity 
+      powerCal();             //calling function for calculating voltage, current and power provided by solar panel
+      dustCal();              //calling function for calculating deposition of dust concentration on panel
+      deviceLocation_data(0); //Function for sending sensor data for Maintenance Indication or monitoring of Solar panel for Efficiency check and passing 0 means normal acitvity 
     }  
  delay(500);
 }
