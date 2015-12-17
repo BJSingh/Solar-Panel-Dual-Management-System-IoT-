@@ -26,3 +26,5 @@ All sensor interfacing code with LinkIt ONE
 Final Project code to send data on webserver ubidots.
 
 8)Final_Code.ino
+
+Webapp folder have files for making standalone webapp.
